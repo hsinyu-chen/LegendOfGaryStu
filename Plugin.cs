@@ -15,8 +15,6 @@ namespace LegendOfGaryStu
         static Mortal.Story.DiceMenuDialog? current = null;
         static int diceSize = 100;
         static bool useDestinyDice = false;
-        static readonly System.Reflection.FieldInfo _currentRandomValueField
-            = typeof(Mortal.Story.DiceMenuDialog).GetField("_currentRandomValue", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         private void Awake()
         {
             // Plugin startup logic
@@ -32,8 +30,8 @@ namespace LegendOfGaryStu
             {
                 var renderer = current.GetComponent<Renderer>();
 
-                GUI.Window(8999644, new Rect(Camera.main.pixelWidth * 0.65f,
-                    (Camera.main.pixelHeight * 0.5f) - 50, 200, 100), WindowFunc, "天命骰子");
+                GUI.Window(8999644, new Rect((Camera.main.pixelWidth * 0.5f) - 100,
+                    (Camera.main.pixelHeight * 0.3f) - 100, 200, 100), WindowFunc, "天命骰子");
             }
         }
         static float diceValue = 1;
@@ -42,13 +40,20 @@ namespace LegendOfGaryStu
         [HarmonyPatch(typeof(Mortal.Story.CheckPointManager), "Dice")]
         static void PatchRandom(string name, ref int random)
         {
-            if (showDiceWindow && useDestinyDice)
+            try
             {
-                random = (int)diceValue;
-                if (current != null)
+                if (showDiceWindow && useDestinyDice)
                 {
-                    _currentRandomValueField.SetValue(current, random);
+                    random = (int)diceValue;
+                    if (current != null)
+                    {
+                        DiceMenuDialogHelper.SetRandomValue(current, random);
+                    }
                 }
+            }
+            finally
+            {
+                useDestinyDice = false;
             }
         }
         [HarmonyPrefix]
@@ -71,25 +76,55 @@ namespace LegendOfGaryStu
         static void PatchDiceMenuOnDisable()
         {
             current = null;
+            useDestinyDice = false;
             showDiceWindow = false;
         }
         public void WindowFunc(int winId)
         {
+            if(current == null)
+            {
+                return;
+            }
             using (new GUILayout.AreaScope(new Rect(10, 30, 180, 70)))
             {
+                GUI.enabled = true;
                 using (new GUILayout.HorizontalScope())
                 {
                     GUILayout.FlexibleSpace();
+
                     if (diceValue > diceSize)
                     {
                         diceValue = diceSize;
                     }
-                    diceValue = Mathf.RoundToInt(GUILayout.HorizontalSlider(diceValue, 1, diceSize, GUILayout.Width(120)));
-                    GUILayout.Label(diceValue.ToString(), textStyle, GUILayout.Width(60));
+                    diceValue = Mathf.RoundToInt(GUILayout.HorizontalSlider(diceValue, 1, diceSize, GUILayout.Width(180)));
+                }
+                using (new GUILayout.HorizontalScope())
+                {
+                    GUILayout.FlexibleSpace();
+                    GUILayout.Label($"{diceValue} 調整後 {diceValue + DiceMenuDialogHelper.GetStatsValue(current)}", textStyle, GUILayout.Width(100));
                     GUILayout.FlexibleSpace();
                 }
-                GUILayout.Space(20);
-                useDestinyDice = GUILayout.Toggle(useDestinyDice, "天命骰啟動");
+                GUILayout.Space(5);
+                GUI.enabled = !DiceMenuDialogHelper.StartButtonPress(current) || 
+                    (DiceMenuDialogHelper.ReStartButton(current).isActiveAndEnabled && !DiceMenuDialogHelper.ReStartButtonPress(current)) ;
+                using (new GUILayout.HorizontalScope())
+                {
+                    GUILayout.FlexibleSpace();
+                    if (GUILayout.Button("天命骰啟動", GUILayout.Width(100)))
+                    {
+                        useDestinyDice = true;
+                        if (DiceMenuDialogHelper.ReStartButton(current).isActiveAndEnabled)
+                        {
+                            current.PressRestartButton();
+                        }
+                        else
+                        {
+                            current.PressStartButton();
+                        }
+                    }
+                    GUILayout.FlexibleSpace();
+                }
+                GUILayout.Space(5);
             }
         }
     }
