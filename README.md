@@ -9,7 +9,7 @@
 [BepInEx Releases](https://github.com/BepInEx/BepInEx/releases/tag/v6.0.0-pre.1) 到這裡找下方Assets
 下載[BepInEx_UnityMono_x86_6.0.0-pre.1.zip](https://github.com/BepInEx/BepInEx/releases/download/v6.0.0-pre.1/BepInEx_UnityMono_x86_6.0.0-pre.1.zip) 解壓縮到遊戲資料夾
 
-到此github releases下載[LegendOfGaryStu.dll](https://github.com/hsinyu-chen/LegendOfGaryStu/releases/tag/v0.1) 並放到遊戲目錄下\BepInEx\plugins
+到此github releases下載[LegendOfGaryStu.dll](https://github.com/hsinyu-chen/LegendOfGaryStu/releases/tag/v0.2) 並放到遊戲目錄下\BepInEx\plugins
 
 ## 如何使用
 
