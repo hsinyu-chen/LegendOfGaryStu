@@ -13,7 +13,8 @@ namespace LegendOfGaryStu
         };
         static bool showDiceWindow = false;
         static Mortal.Story.DiceMenuDialog? current = null;
-        static int diceSize = 100;
+        static int diceMin = 0;
+        static int diceMax = 100;
         static bool useDestinyDice = false;
         private void Awake()
         {
@@ -57,10 +58,11 @@ namespace LegendOfGaryStu
             }
         }
         [HarmonyPrefix]
-        [HarmonyPatch(typeof(Mortal.Story.DiceMenuDialog), "SetRandom")]
-        static void PatchDiceMenuSetRandom(Mortal.Story.DiceMenuDialog __instance, int count, int value)
+        [HarmonyPatch(typeof(Mortal.Story.DiceMenuDialog), "UpdateDiceText")]
+        static void PatchDiceUpdateDiceText(Mortal.Story.DiceMenuDialog __instance, int min, int max)
         {
-            diceSize = count;
+            diceMin = min;
+            diceMax = max;
         }
 
         [HarmonyPostfix]
@@ -92,11 +94,11 @@ namespace LegendOfGaryStu
                 {
                     GUILayout.FlexibleSpace();
 
-                    if (diceValue > diceSize)
+                    if (diceValue > diceMax)
                     {
-                        diceValue = diceSize;
+                        diceValue = diceMax;
                     }
-                    diceValue = Mathf.RoundToInt(GUILayout.HorizontalSlider(diceValue, 1, diceSize, GUILayout.Width(180)));
+                    diceValue = Mathf.RoundToInt(GUILayout.HorizontalSlider(diceValue, diceMin, diceMax, GUILayout.Width(180)));
                 }
                 using (new GUILayout.HorizontalScope())
                 {
